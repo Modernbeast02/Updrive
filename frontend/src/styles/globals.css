@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
+  /* --background: #ffffff; */
   --foreground: #171717;
 }
 
@@ -24,4 +24,51 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+}
+
+/* .bg-dotted {
+  background-image: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.05) 1px,
+    rgba(0, 0, 0, 0) 1px
+  );
+  background-size: 1vh;
+} */
+
+.text-color-gradient2 {
+  -webkit-text-fill-color: transparent;
+  background-image: linear-gradient(101.61deg, #6feedf, #7ec0e5 58%, #7696d6);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.getStartedButton {
+  grid-column-gap: 0.375rem;
+  color: var(--light-blue);
+  background-color: #052f3d;
+  background-image: radial-gradient(
+      circle at 130% 80%,
+      rgba(255, 255, 255, 0.09),
+      rgba(255, 255, 255, 0)
+    ),
+    url(https://assets-global.website-files.com/6534e28…/6538f90…_button%20dots%20bg.svg),
+    linear-gradient(rgba(0, 0, 0, 0.24), rgba(0, 0, 0, 0));
+  background-position: 0 0, 0 0, 0 0;
+  background-repeat: repeat, no-repeat, repeat;
+  background-size: auto, cover, auto;
+  border-radius: 6px;
+  flex: 0 auto;
+  justify-content: center;
+  align-items: center;
+  padding: 0.75rem 1.25rem 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.71429;
+  text-decoration: none;
+  display: flex;
+  position: relative;
+  overflow: hidden;
+  box-shadow: -1px 0 rgba(255, 255, 255, 0.08), 1px 0 rgba(255, 255, 255, 0.08),
+    0 -1px rgba(255, 255, 255, 0.08), -1px 0 #465c63, 1px 0 #465c63,
+    0 1px #465c63, 0 -1px #465c63, inset 0 1px rgba(255, 255, 255, 0.08);
 }
