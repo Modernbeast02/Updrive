@@ -8,8 +8,8 @@ const Hero = () => {
       <p className="text-lg mb-6 font-generalsans text-color-gradient2">
         Your one stop destination to upload pdfs
       </p>
-      <div className="flex justify-center items-center">
-        <button className=" text-white py-2 px-6 rounded-lg getStartedButton">
+      <div className="flex justify-center items-center pt-6">
+        <button className=" text-white py-2 px-6 rounded-lg getStartedButton hover:scale-[1.05] duration-300">
           Get Started
         </button>
       </div>
