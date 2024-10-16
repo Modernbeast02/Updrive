@@ -101,7 +101,7 @@ class RAGProcessor:
             f"Client query: '{user_input}'\n\n"
             f"Relevant context from the document:\n{context}\n\n"
             f"If it is a deep complex question, break down the query into logical parts, analyze each aspect based on the provided context, "
-            f"and provide a detailed answer. Be sure to reason through the steps for a more analytical response, and in the end, "
+            f"and provide a detailed answer. Be sure to reason through the steps for a more analytical response and in the end"
         )
 
         chat_completion = self.groq_client.chat.completions.create(
