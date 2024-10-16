@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 const Hero = () => {
   return (
     <section className=" text-[#b7e4ea] text-center py-20">
@@ -9,8 +11,8 @@ const Hero = () => {
         Your one stop destination to upload pdfs
       </p>
       <div className="flex justify-center items-center pt-6">
-        <button className=" text-white py-2 px-6 rounded-lg getStartedButton hover:scale-[1.05] duration-300">
-          Get Started
+        <button className=" text-white mb-24 py-2 px-6 rounded-lg getStartedButton hover:scale-[1.05] duration-300">
+          <Link href="#uploader"> Get Started</Link>
         </button>
       </div>
     </section>

@@ -3,8 +3,9 @@
 @tailwind utilities;
 
 :root {
-  /* --background: #ffffff; */
+  --background: #ffffff;
   --foreground: #171717;
+  scroll-behavior: smooth;
 }
 
 @media (prefers-color-scheme: dark) {
