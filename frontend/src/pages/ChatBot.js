@@ -51,70 +51,70 @@ const ChatBot = (props) => {
   const [isTyping, setIsTyping] = useState(false);
   const chatEndRef = useRef(null);
 
-  // const fetchProcessedString = async () => {
-  //   try {
-  //     const response = await fetch(`http://127.0.0.1:5000/query?input_string=${inputMessage}`);
-  //     const data = await response.json();
-  //     setProcessedString(data.result);
+  const fetchProcessedString = async () => {
+    try {
+      const response = await fetch(`http://127.0.0.1:5000/query?input_string=${inputMessage}`);
+      const data = await response.json();
+      setProcessedString(data.result);
 
-  //     // Add the processed string as a new message from the Bot
-  //     const botResponseMessage = {
-  //       id: messages.length + 1,
-  //       user: "Bot",
-  //       text: data.result,
-  //       timestamp: new Date().toLocaleTimeString([], {
-  //         hour: "2-digit",
-  //         minute: "2-digit",
-  //       }),
-  //       citations:['Yes', 'No']
-  //     };
-  //     setMessages((prevMessages) => [...prevMessages, botResponseMessage]);
-  //   } catch (error) {
-  //     console.error('Error fetching processed string:', error);
-  //   }
-  // };
-  // const fetchCitations = async () => {
-  //   // try {
-  //   //   const response = await fetch(`http://127.0.0.1:5000/citation`);
-  //   // } catch (error) {
-  //   //   console.error('Error fetching processed string:', error);
-  //   // }
-  //     try {
-  //       const response = await fetch('http://127.0.0.1:5000/citation');
+      // Add the processed string as a new message from the Bot
+      const botResponseMessage = {
+        id: messages.length + 1,
+        user: "Bot",
+        text: data.result,
+        timestamp: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        citations:['Yes', 'No']
+      };
+      setMessages((prevMessages) => [...prevMessages, botResponseMessage]);
+    } catch (error) {
+      console.error('Error fetching processed string:', error);
+    }
+  };
+  const fetchCitations = async () => {
+    // try {
+    //   const response = await fetch(`http://127.0.0.1:5000/citation`);
+    // } catch (error) {
+    //   console.error('Error fetching processed string:', error);
+    // }
+      try {
+        const response = await fetch('http://127.0.0.1:5000/citation');
 
-  //       if (!response.ok) {
-  //           throw new Error('Network response was not ok');
-  //       }
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
 
-  //       // Get the response as a Blob
-  //       const blob = await response.blob();
+        // Get the response as a Blob
+        const blob = await response.blob();
 
-  //       // Create a link element
-  //       const link = document.createElement('a');
-  //       link.href = URL.createObjectURL(blob);
-  //       link.download = 'citation.pdf'; // specify the desired file name
+        // Create a link element
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'citation.pdf'; // specify the desired file name
 
-  //       // Append to the body (needed for Firefox)
-  //       document.body.appendChild(link);
+        // Append to the body (needed for Firefox)
+        document.body.appendChild(link);
 
-  //       // Trigger the download
-  //       link.click();
+        // Trigger the download
+        link.click();
 
-  //       // Clean up and remove the link
-  //       document.body.removeChild(link);
-  //       URL.revokeObjectURL(link.href); // free up memory
-  //   } catch (error) {
-  //       console.error('There was a problem with the fetch operation:', error);
-  //   }
-  // };
+        // Clean up and remove the link
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href); // free up memory
+    } catch (error) {
+        console.error('There was a problem with the fetch operation:', error);
+    }
+  };
 
-  // useEffect(() => {
-  //   scrollToBottom();
-  // }, [messages]);
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
-  // const scrollToBottom = () => {
-  //   chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  // };
+  const scrollToBottom = () => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   const handleInputChange = (e) => {
     setInputMessage(e.target.value);
@@ -149,14 +149,14 @@ const ChatBot = (props) => {
     }
   };
 
-  // const handleOptionClick = (id, option) => {
-  //   if (option === "Reply") {
-  //     const messageToReply = messages.find((msg) => msg.id === id);
-  //     setInputMessage(`@${messageToReply.user} `);
-  //   } else if (option === "Delete") {
-  //     setMessages(messages.filter((msg) => msg.id !== id));
-  //   }
-  // };
+  const handleOptionClick = (id, option) => {
+    if (option === "Reply") {
+      const messageToReply = messages.find((msg) => msg.id === id);
+      setInputMessage(`@${messageToReply.user} `);
+    } else if (option === "Delete") {
+      setMessages(messages.filter((msg) => msg.id !== id));
+    }
+  };
 
   return (
     <>
