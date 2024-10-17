@@ -1,6 +1,7 @@
 import { useRouter } from "next/router";
 import React, { useState } from "react";
 import { Spinner } from "flowbite-react";
+import Loader from "./Loader";
 
 export const Uploader = () => {
   const [file, setFile] = useState(null);
@@ -41,7 +42,7 @@ export const Uploader = () => {
     return (
       <>
         <section id="uploader" className="w-full flex justify-center pb-[450px]">
-        {loading ? (<Spinner aria-label="Default status example" />):(
+        {loading ? <Loader/>:(
           <div className="flex items-center justify-center w-2/3">
             <label
               htmlFor="dropzone-file"
