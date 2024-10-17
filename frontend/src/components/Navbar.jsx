@@ -5,8 +5,8 @@ const Navbar = () => {
   if (session) {
     return (
       <>
-        <nav className="flex justify-between items-center py-6 px-10 bg-gray-900 text-[#b7e4ea]">
-          <Link href="#home" className="text-xl font-bold">
+        <nav className="flex justify-between items-center py-6 px-10 bg-gray-900 fixed text-[#b7e4ea]">
+          <Link href="/" className="text-xl font-bold">
             Updrive
           </Link>
           <div className="flex space-x-6">
@@ -29,7 +29,7 @@ const Navbar = () => {
   } else {
     return (
       <>
-        <nav className="flex justify-between items-center py-6 px-10 bg-gray-900 text-[#b7e4ea]">
+        <nav className="flex sticky top-0 w-full z-100  justify-between items-center py-6 px-10 bg-gray-900 text-[#b7e4ea]">
           <div className="text-xl font-bold">Updrive</div>
           <div className="flex space-x-6">
             <Link href="#how-it-works">How it works</Link>

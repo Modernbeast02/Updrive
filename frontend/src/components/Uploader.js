@@ -21,28 +21,32 @@ export const Uploader = () => {
 
       try {
         setLoading(true);
-        const response = await fetch('http://127.0.0.1:5000/upload', {
-          method: 'POST',
+        const response = await fetch("http://127.0.0.1:5000/upload", {
+          method: "POST",
           body: formData,
         });
         setLoading(false);
         if (response.ok) {
-          alert('File uploaded successfully!');
+          alert("File uploaded successfully!");
           router.push(`/ChatBot?name=${selectedFile.name}`);
         } else {
-          alert('Failed to upload the file.');
+          alert("Failed to upload the file.");
         }
       } catch (error) {
-        console.error('Error:', error);
-        alert('An error occurred while uploading the file.');
+        console.error("Error:", error);
+        alert("An error occurred while uploading the file.");
       }
     }
   };
 
-    return (
-      <>
-        <section id="uploader" className="w-full flex justify-center pb-[450px]">
-        {loading ? <Loader/>:(
+  return (
+    <>
+      <section id="uploader" className="w-full flex justify-center pb-[250px]">
+        {loading ? (
+          <div className="-mb-60">
+            <Loader />
+          </div>
+        ) : (
           <div className="flex items-center justify-center w-2/3">
             <label
               htmlFor="dropzone-file"
@@ -65,8 +69,8 @@ export const Uploader = () => {
                   />
                 </svg>
                 <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                  <span className="font-semibold">Click to upload</span> or drag and
-                  drop
+                  <span className="font-semibold">Click to upload</span> or drag
+                  and drop
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400">PDF</p>
               </div>
@@ -79,7 +83,7 @@ export const Uploader = () => {
             </label>
           </div>
         )}
-        </section>
-      </>
-    );
+      </section>
+    </>
+  );
 };
