@@ -1,50 +1,88 @@
 import React, { useState, useRef, useEffect } from "react";
 import { FaUser, FaPaperPlane } from "react-icons/fa";
-
+import { useRouter } from "next/router";
 const ChatBot = (props) => {
   const [processedString, setProcessedString] = useState('');
+  const initialMessages = [
+    {
+      id: 1,
+      user: "Bot",
+      text: "Hey! Ask me a question.",
+      timestamp:  new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+    },
+  ];
 
-  // Fetch the processed string from Flask API
-  useEffect(() => {
+  const router = useRouter();
+  const {query} = router;
+  const param1 = query.name;
+  const [messages, setMessages] = useState(initialMessages);
+  const [inputMessage, setInputMessage] = useState("");
+  const [error, setError] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const chatEndRef = useRef(null);
+
     const fetchProcessedString = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:5000/get_processed_string');
+        const response = await fetch(`http://127.0.0.1:5000/query?input_string=${inputMessage}`);
         const data = await response.json();
-        setProcessedString(data.processed_string);
+        setProcessedString(data.result);
 
         // Add the processed string as a new message from the Bot
         const botResponseMessage = {
           id: messages.length + 1,
           user: "Bot",
-          text: data.processed_string,
+          text: data.result,
           timestamp: new Date().toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
           }),
+          citations:['Yes', 'No']
         };
         setMessages((prevMessages) => [...prevMessages, botResponseMessage]);
       } catch (error) {
         console.error('Error fetching processed string:', error);
       }
     };
+    const fetchCitations = async () => {
+      // try {
+      //   const response = await fetch(`http://127.0.0.1:5000/citation`);
+      // } catch (error) {
+      //   console.error('Error fetching processed string:', error);
+      // }
+        try {
+          const response = await fetch('http://127.0.0.1:5000/citation');
 
-    fetchProcessedString();
-  }, []);
+          if (!response.ok) {
+              throw new Error('Network response was not ok');
+          }
 
-  const initialMessages = [
-    {
-      id: 1,
-      user: "Bot",
-      text: "Hey! Ask me a question.",
-      timestamp: "12:00AM",
-    },
-  ];
+          // Get the response as a Blob
+          const blob = await response.blob();
 
-  const [messages, setMessages] = useState(initialMessages);
-  const [inputMessage, setInputMessage] = useState("");
-  const [error, setError] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
-  const chatEndRef = useRef(null);
+          // Create a link element
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(blob);
+          link.download = 'citation.pdf'; // specify the desired file name
+
+          // Append to the body (needed for Firefox)
+          document.body.appendChild(link);
+
+          // Trigger the download
+          link.click();
+
+          // Clean up and remove the link
+          document.body.removeChild(link);
+          URL.revokeObjectURL(link.href); // free up memory
+      } catch (error) {
+          console.error('There was a problem with the fetch operation:', error);
+      }
+    };
+
+
+ 
 
   useEffect(() => {
     scrollToBottom();
@@ -61,7 +99,7 @@ const ChatBot = (props) => {
     setTimeout(() => setIsTyping(false), 1000);
   };
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (inputMessage.trim() === "") {
       setError("Please enter a message");
       return;
@@ -78,6 +116,8 @@ const ChatBot = (props) => {
     setMessages([...messages, newMessage]);
     setInputMessage("");
     setError("");
+    await fetchProcessedString()
+
   };
 
   const handleKeyPress = (e) => {
@@ -98,7 +138,7 @@ const ChatBot = (props) => {
   return (
     <>
       <div className="flex justify-center items-center -mb-16 mt-12 text-lg">
-        {props.fileName} .pdf
+        {param1}
       </div>
       <div className=" p-4 bg-[#0A1B2E] rounded-lg shadow-lg mt-20 mr-20 ml-20">
         <div className="bg-[#0A1B2E] rounded-lg shadow-inner p-4 min-h-[500px] overflow-y-auto">
@@ -132,6 +172,18 @@ const ChatBot = (props) => {
                   </div>
                 </div>
               </div>
+              {message.citations&&( <div className="flex justify-start mt-2">
+              <p className="text-md text- white text-right mt-1 mr-2 opacity-75">
+                Do You want Citations?
+              </p>
+                <button className="bg-green-500 text-white rounded px-4 py-1 mr-2" onClick={fetchCitations}>
+                  Yes
+                </button>
+                <button className="bg-red-500 text-white rounded px-4 py-1">
+                  No
+                </button>
+              </div>)}
+              
             </div>
           ))}
           <div ref={chatEndRef} />

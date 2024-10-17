@@ -1,9 +1,11 @@
 import { useRouter } from "next/router";
 import React, { useState } from "react";
+import { Spinner } from "flowbite-react";
 
 export const Uploader = () => {
   const [file, setFile] = useState(null);
   const [isFilePresent, setIsFilePresent] = useState(false);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const handleFileChange = async (e) => {
@@ -17,13 +19,15 @@ export const Uploader = () => {
       formData.append("file", selectedFile); // Make sure key matches your backend
 
       try {
+        setLoading(true);
         const response = await fetch('http://127.0.0.1:5000/upload', {
           method: 'POST',
           body: formData,
         });
-
+        setLoading(false);
         if (response.ok) {
           alert('File uploaded successfully!');
+          router.push(`/ChatBot?name=${selectedFile.name}`);
         } else {
           alert('Failed to upload the file.');
         }
@@ -34,10 +38,10 @@ export const Uploader = () => {
     }
   };
 
-  if (!isFilePresent) {
     return (
       <>
         <section id="uploader" className="w-full flex justify-center pb-[450px]">
+        {loading ? (<Spinner aria-label="Default status example" />):(
           <div className="flex items-center justify-center w-2/3">
             <label
               htmlFor="dropzone-file"
@@ -73,8 +77,8 @@ export const Uploader = () => {
               />
             </label>
           </div>
+        )}
         </section>
       </>
     );
-  }
 };
