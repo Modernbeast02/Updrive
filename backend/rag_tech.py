@@ -175,6 +175,20 @@ if __name__ == "__main__":
     response,citations = pdf_processor.handle_query(query)
     print(response)
     print(citations)
+    pdf_processor = RAGProcessor(pdf_path="amazon.pdf", vector_db_collection_name="my_vector_collection", groq_api_key="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")
+    pdf_processor.process_pdf_and_store()
+    print("PDF Processed...")
+    query = "Generate 5 random Questions Regarding the amazon company do not generate any answer"
+    citations = []
+    response,citations = pdf_processor.handle_query(query)
+    n = response.split("\n")
+    print(n)
+    g = []
+    for i in n:
+            if(len(i) > 1):
+                if(i[0].isdigit() == True):
+                    g.append(i)
+    print(g)
 
     for i in citations:
         if(str(i).isdigit() == True):
