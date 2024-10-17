@@ -1,8 +1,10 @@
-blinker==1.8.2
-click==8.1.7
+chromadb==0.5.15
+fitz==0.0.1.dev2
 Flask==3.0.3
-Flask-Cors==5.0.0
-itsdangerous==2.2.0
-Jinja2==3.1.4
-MarkupSafe==3.0.1
-Werkzeug==3.0.4
+flask_cors==5.0.0
+groq==0.11.0
+numpy==2.1.2
+PyPDF2==3.0.1
+scikit_learn==1.5.2
+sentence_transformers==3.2.0
+spacy==3.8.2

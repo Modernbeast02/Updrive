@@ -50,6 +50,21 @@ def upload_file():
     else:
         return jsonify({'error': 'Failed to upload file'}), 400
 
+@app.route('/questions', methods=['GET'])
+def get_questions():
+    global rag
+    query = "Generate 5 random Questions Regarding the amazon company do not generate any answer"
+    citations = []
+    response,citations = rag.handle_query(query)
+    n = response.split("\n")
+    print(n)
+    g = []
+    for i in n:
+            if(len(i) > 1):
+                if(i[0].isdigit() == True):
+                    g.append(i)
+    print(g)
+    return jsonify({"ques":g}),200
 @app.route('/query', methods=['GET'])
 def get_query():
     global rag
