@@ -2,30 +2,41 @@ import React, { useState, useRef, useEffect } from "react";
 import { FaUser, FaPaperPlane } from "react-icons/fa";
 
 const ChatBot = (props) => {
+  const [processedString, setProcessedString] = useState('');
+
+  // Fetch the processed string from Flask API
+  useEffect(() => {
+    const fetchProcessedString = async () => {
+      try {
+        const response = await fetch('http://127.0.0.1:5000/get_processed_string');
+        const data = await response.json();
+        setProcessedString(data.processed_string);
+
+        // Add the processed string as a new message from the Bot
+        const botResponseMessage = {
+          id: messages.length + 1,
+          user: "Bot",
+          text: data.processed_string,
+          timestamp: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        };
+        setMessages((prevMessages) => [...prevMessages, botResponseMessage]);
+      } catch (error) {
+        console.error('Error fetching processed string:', error);
+      }
+    };
+
+    fetchProcessedString();
+  }, []);
+
   const initialMessages = [
     {
       id: 1,
-      user: "Alice",
-      text: "Hey team, how's the website deployment going?",
-      timestamp: "10:00 AM",
-    },
-    {
-      id: 2,
-      user: "Bob",
-      text: "We're making progress. The backend is up and running.",
-      timestamp: "10:05 AM",
-    },
-    {
-      id: 3,
-      user: "Charlie",
-      text: "Frontend is almost ready. Just fixing some responsive issues.",
-      timestamp: "10:10 AM",
-    },
-    {
-      id: 4,
-      user: "Diana",
-      text: "Great! I'll start preparing the documentation.",
-      timestamp: "10:15 AM",
+      user: "Bot",
+      text: "Hey! Ask me a question.",
+      timestamp: "12:00AM",
     },
   ];
 
@@ -87,10 +98,10 @@ const ChatBot = (props) => {
   return (
     <>
       <div className="flex justify-center items-center -mb-16 mt-12 text-lg">
-        {props.fileName} Ankur.pdf
+        {props.fileName} .pdf
       </div>
       <div className=" p-4 bg-[#0A1B2E] rounded-lg shadow-lg mt-20 mr-20 ml-20">
-        <div className="bg-[#0A1B2E] rounded-lg shadow-inner p-4 overflow-y-auto">
+        <div className="bg-[#0A1B2E] rounded-lg shadow-inner p-4 min-h-[500px] overflow-y-auto">
           {messages.map((message) => (
             <div key={message.id} className={`mb-4 animate-fade-in`}>
               <div

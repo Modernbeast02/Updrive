@@ -6,7 +6,9 @@ const Navbar = () => {
     return (
       <>
         <nav className="flex justify-between items-center py-6 px-10 bg-gray-900 text-[#b7e4ea]">
-          <div className="text-xl font-bold">Updrive</div>
+          <Link href="#home" className="text-xl font-bold">
+            Updrive
+          </Link>
           <div className="flex space-x-6">
             <Link href="#how-it-works">How it works</Link>
             <Link href="#why-us">Why Updrive</Link>
