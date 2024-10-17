@@ -10,7 +10,7 @@ UpDrive is an innovative application that leverages Large Language Models (LLMs)
 
 ## Team AYUKA
 
-- **Aryan Kaun**
+- **Aryan Kaul**
 - **Kabir Arora**
 - **Ankur Gupta**
 - **Yashita Bansal**
