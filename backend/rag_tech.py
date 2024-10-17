@@ -1,4 +1,3 @@
-import fitz
 import spacy
 from sentence_transformers import SentenceTransformer, util
 import chromadb
@@ -8,8 +7,12 @@ from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 import os
 from groq import Groq
-import random
-import PyPDF2
+from PyPDF2 import PdfReader, PdfWriter
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
+from reportlab.lib import colors
+from io import BytesIO
+
 
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
@@ -24,26 +27,19 @@ class RAGProcessor:
         self.collection = self.client.create_collection(vector_db_collection_name)
 
     def read_pdf(self):
-        pdf_document = fitz.open(self.pdf_path)
+        reader = PdfReader(self.pdf_path)
         text = ""
         tables = []
         images = []
         line_info = []
-        for page_num in range(len(pdf_document)):
-            page = pdf_document[page_num]
-            text += page.get_text("text")
-            blocks = page.get_text("dict")["blocks"]
-            for block in blocks:
-                if block["type"] == 0:  # Text block
-                    line_number = 0
-                    for line in block["lines"]:
-                        line_number += 1
-                        for span in line["spans"]:
-                            if any(char.isdigit() for char in span["text"]):
-                                tables.append(span["text"])
-                            line_info.append({"page": page_num, "line": line_number, "text": span["text"]})
-            images += page.get_images(full=True)
-        pdf_document.close()
+
+        for page_num, page in enumerate(reader.pages):
+            text += page.extract_text()
+            for line_number, line in enumerate(text.splitlines(), start=1):
+                if any(char.isdigit() for char in line):
+                    tables.append(line)
+                line_info.append({"page": page_num, "line": line_number, "text": line})
+
         return text, tables, images, line_info
 
     def chunk_sentences_with_clustering_and_similarity(self, sentences, min_word_count=100, max_word_count=300, similarity_threshold=0.7):
@@ -125,7 +121,7 @@ class RAGProcessor:
             f"Client query: '{user_input}'\n\n"
             f"Relevant context from the document:\n{context}\n\n"
             f"If it is a deep complex question, break down the query into logical parts, analyze each aspect based on the provided context, "
-            f"and provide a detailed answer. Be sure to reason through the steps for a more analytical response"
+            f"and provide a detailed answer. Be sure to reason through the steps for a more analytical response."
         )
 
         chat_completion = self.groq_client.chat.completions.create(
@@ -139,45 +135,37 @@ class RAGProcessor:
         return chat_completion.choices[0].message.content
 
     def handle_query(self, query):
-        citation = {}
-        search_results,citation = self.hybrid_similarity_search(query)
+        search_results, citations = self.hybrid_similarity_search(query)
         context = search_results
         bot_response = self.get_bot_response(query, context)
-        return bot_response,citation
-    
-    def highlight_and_append_pdf_page(self,input_pdf: str, output_pdf: str, page_number: int):
-        doc = fitz.open(input_pdf)
-        if page_number < 1 or page_number > doc.page_count:
+        return bot_response, citations
+
+    def highlight_and_append_pdf_page(self, input_pdf: str, output_pdf: str, page_number: int):
+        reader = PdfReader(input_pdf)
+        if page_number < 1 or page_number > len(reader.pages):
             raise ValueError("Invalid page number")
-        page = doc.load_page(page_number - 1)
+
+        page = reader.pages[page_number - 1]
+        writer = PdfWriter()
+
         try:
-            new_doc = fitz.open(output_pdf)  
-        except:
-            new_doc = fitz.open() 
-        new_page = new_doc.new_page(width=page.rect.width, height=page.rect.height)
-        new_page.show_pdf_page(page.rect, doc, page_number - 1)
-        highlight = new_page.add_highlight_annot(new_page.rect)
-        highlight.set_colors({"stroke": (1, 1, 0)})
-        highlight.update()
-        temp_output = output_pdf + ".tmp"
-        new_doc.save(temp_output)
-        doc.close()
-        new_doc.close()
-        os.replace(temp_output, output_pdf)
+            existing_output_reader = PdfReader(output_pdf)
+            for existing_page in range(len(existing_output_reader.pages)):
+                writer.add_page(existing_output_reader.pages[existing_page])
+        except FileNotFoundError:
+
+            print(f"Creating new output PDF: {output_pdf}")
+
+
+        writer.add_page(page) 
+        with open(output_pdf, 'wb') as f:
+            writer.write(f)
+
+        print(f"Page {page_number} fully highlighted and saved to {output_pdf}")
 
 if __name__ == "__main__":
     pdf_processor = RAGProcessor(pdf_path="amazon.pdf", vector_db_collection_name="my_vector_collection", groq_api_key="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")
     pdf_processor.process_pdf_and_store()
-    print("PDF Processed...")
-    
-    query = "who is the ceo of amazon"
-    citations = []
-    response,citations = pdf_processor.handle_query(query)
-    print(response)
-    print(citations)
-    pdf_processor = RAGProcessor(pdf_path="amazon.pdf", vector_db_collection_name="my_vector_collection", groq_api_key="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")
-    pdf_processor.process_pdf_and_store()
-    print("PDF Processed...")
     query = "Generate 5 random Questions Regarding the amazon company do not generate any answer"
     citations = []
     response,citations = pdf_processor.handle_query(query)
