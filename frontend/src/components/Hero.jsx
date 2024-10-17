@@ -9,13 +9,13 @@ const Hero = () => {
       </p>
       <TypeAnimation
         sequence={[
-          "Innovative",
+          "Pioneering",
           1500,
           "Creative",
           1500,
-          "Reliable",
+          "Adaptive",
           1500,
-          "Efficient",
+          "Robust",
           1500,
           "Future-Ready",
           1500,
