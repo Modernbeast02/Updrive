@@ -1,0 +1,36 @@
+.sectionStyle {
+	width: 8em;
+	outline: 1px solid #009bc2;
+	outline-offset: 3px;
+	border-radius: 15em;
+	box-shadow: 0 0 1.5em -0.15em #0099ff;
+}
+.dot {
+	width: 1em;
+	height: 1em;
+	background: #0099ff;
+	border-radius: 20em;
+	filter: brightness(1.25);
+	animation: stretch 1s linear alternate infinite;
+}
+@keyframes stretch {
+	100% {
+		transform-origin: left;
+		transform: translateX(7em);
+	}
+	50% {
+		width: 3em;
+	}
+}
+
+
+.body {
+	min-height: 100vh;
+	background: #141414;
+	display: grid;
+	place-items: center;
+	font-family: system-ui, sans-serif;
+	font-size: calc(1rem + 1vw);
+	line-height: 1;
+}
+
