@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "your_flask_app"
+version = "0.1.0"
+description = "A Flask application with specified dependencies."
+authors = ["Ujvl <ujvl@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "3.9.20"
+chromadb = "*"
+Flask = "*"
+flask_cors = "*"
+groq = "*"
+numpy = "*"
+PyPDF2 = "*"
+scikit_learn = "*"
+sentence_transformers = "*"
+spacy = "*"
+reportlab = "*"
+tools = "*"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

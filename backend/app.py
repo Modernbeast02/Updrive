@@ -53,7 +53,7 @@ def upload_file():
 @app.route('/questions', methods=['GET'])
 def get_questions():
     global rag
-    query = "Generate 5 random Questions Regarding the amazon company do not generate any answer"
+    query = "Generate 5 random Questions about the pdf in input do not generate any answer"
     citations = []
     response,citations = rag.handle_query(query)
     n = response.split("\n")

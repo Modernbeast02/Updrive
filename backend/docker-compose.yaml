@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  flask:
+    build:
+      context: .
+      dockerfile: Dockerfile 
+    image: ugpec7/flask # Specify the name of your Dockerfile if it's not "Dockerfile"
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=development
+    networks:
+      - my_network
+    depends_on:
+      - chroma
+
+  chroma:
+    image: chromadb/chroma
+    ports:
+      - "8000:8000"
+    environment:
+      - CHROMA_DB_URL=http://localhost:8000
+    networks:
+      - my_network
+  
+networks:
+  my_network:
+    driver: bridge
+
