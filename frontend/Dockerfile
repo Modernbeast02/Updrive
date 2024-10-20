@@ -25,11 +25,8 @@ WORKDIR /app
 # Copy the built app from the builder stage
 COPY --from=builder /app .
 
-# Install serve to serve the application
-RUN npm install -g serve
-
 # Expose the desired port
 EXPOSE 3000
 
 # Command to run the application
-CMD ["serve", "-s", "out", "-l", "3000"]
+CMD ["npm", "run", "dev"]
