@@ -50,7 +50,7 @@ const ChatBot = (props) => {
   useEffect(()=>{
     const fetchQues = async () => {
     try {
-      const response = await fetch(`http://34.121.63.103:5000/questions`);
+      const response = await fetch(`http://frontend.updrive.tech:5000/questions`);
       const data = await response.json();
       setButton(data.ques.map((q, idx)=>{
         return {
@@ -126,7 +126,7 @@ const ChatBot = (props) => {
 
   const fetchProcessedString = async () => {
     try {
-      const response = await fetch(`http://34.121.63.103:5000/query?input_string=${inputMessage}`);
+      const response = await fetch(`http://frontend.updrive.tech:5000/query?input_string=${inputMessage}`);
       const data = await response.json();
       setProcessedString(data.result);
 
@@ -148,7 +148,7 @@ const ChatBot = (props) => {
   };
   const fetchCitations = async () => {
       try {
-        const response = await fetch('http://34.121.63.103:5000/citation');
+        const response = await fetch('http://frontend.updrive.tech:5000/citation');
 
         if (!response.ok) {
             throw new Error('Network response was not ok');

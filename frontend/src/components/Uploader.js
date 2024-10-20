@@ -21,7 +21,8 @@ export const Uploader = () => {
 
       try {
         setLoading(true);
-        const response = await fetch("http://34.121.63.103:5000/upload", {
+
+        const response = await fetch("http://frontend.updrive.tech:5000/upload", {
           method: "POST",
           body: formData,
         });
