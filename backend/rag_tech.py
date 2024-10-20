@@ -177,7 +177,6 @@ if __name__ == "__main__":
                 if(i[0].isdigit() == True):
                     g.append(i)
     print(g)
-
     for i in citations:
         if(str(i).isdigit() == True):
             pdf_processor.highlight_and_append_pdf_page(input_pdf='amazon.pdf',output_pdf='output.pdf',page_number=i+1)
