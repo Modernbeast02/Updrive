@@ -22,9 +22,9 @@ class RAGProcessor:
         self.vector_db_collection_name = vector_db_collection_name
         self.nlp = spacy.load("en_core_web_sm")
         self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
-        self.client = chromadb.Client()
+        self.client = chromadb.HttpClient(host='chroma', port=8000)
         self.groq_client = Groq(api_key=groq_api_key)
-        self.collection = self.client.create_collection(vector_db_collection_name)
+        self.collection = self.client.get_or_create_collection(vector_db_collection_name)
 
     def read_pdf(self):
         reader = PdfReader(self.pdf_path)

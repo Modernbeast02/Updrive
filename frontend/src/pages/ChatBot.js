@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
-import { FaUser, FaPaperPlane } from "react-icons/fa";
+import { FaUser, FaPaperPlane, FaMicrophone, FaMicrophoneSlash } from "react-icons/fa";
 import { useRouter } from "next/router";
 const ChatBot = (props) => {
   const [processedString, setProcessedString] = useState("");
+  const [startingButtons , setButton] = useState([]);
   const initialMessages = [
     {
-      id: 1,
+      id: 0,
       user: "Bot",
       text: "Hey! Ask me a question.",
       timestamp: new Date().toLocaleTimeString([], {
@@ -14,46 +15,118 @@ const ChatBot = (props) => {
       }),
     },
   ];
-  const startingButtons = [
-    {
-      id: 1,
-      text: "Ask me about PDFs",
-      user: "Bot",
-    },
-    {
-      id: 2,
-      text: "What is a Smart PDF Companion?",
-      user: "Bot",
-    },
-    {
-      id: 3,
-      text: "How to upload a PDF? just writing this random msg to increase length hehe",
-      user: "Bot",
-    },
-    {
-      id: 4,
-      text: "PDF features",
-      user: "Bot",
-    },
-    {
-      id: 5,
-      text: "Need help with a question",
-      user: "Bot",
-    },
-  ];
+  
+  // const startingButtons = [
+  //   {
+  //     id: 1,
+  //     text: "Ask me about PDFs",
+  //     user: "Bot",
+  //   },
+  //   {
+  //     id: 2,
+  //     text: "What is a Smart PDF Companion?",
+  //     user: "Bot",
+  //   },
+  //   {
+  //     id: 3,
+  //     text: "How to upload a PDF? just writing this random msg to increase length hehe",
+  //     user: "Bot",
+  //   },
+  //   {
+  //     id: 4,
+  //     text: "PDF features",
+  //     user: "Bot",
+  //   },
+  //   {
+  //     id: 5,
+  //     text: "Need help with a question",
+  //     user: "Bot",
+  //   },
+  // ];
 
   const router = useRouter();
   const { query } = router;
   const param1 = query.name;
+  useEffect(()=>{
+    const fetchQues = async () => {
+    try {
+      const response = await fetch(`http://frontend.updrive.tech:5000/questions`);
+      const data = await response.json();
+      setButton(data.ques.map((q, idx)=>{
+        return {
+          id: idx,
+          text:q,
+          user:"Bot"
+        }
+      }));
+
+    } catch (error) {
+      console.error('Error fetching processed string:', error);
+    }
+  }
+  fetchQues();
+},[])
   const [messages, setMessages] = useState(initialMessages);
   const [inputMessage, setInputMessage] = useState("");
   const [error, setError] = useState("");
+  const [start, setStart] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const chatEndRef = useRef(null);
+  const [firstSelected, setFirstSelected] = useState(false);
+  const [transcript, setTranscript] = useState('');
+  const [isRecording, setIsRecording] = useState(false);
+  const [recognition, setRecognition] = useState(null);
+
+  useEffect(() => {
+    // Check if the browser supports SpeechRecognition
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    console.log(isRecording, recognition);
+    if (SpeechRecognition) {
+      const rec = new SpeechRecognition();
+      rec.continuous = true; // Keep recognition active
+
+      rec.onresult = (event) => {
+
+        const currentTranscript = Array.from(event.results)
+          .map(result => result[0].transcript)
+          .join('');
+          console.log(currentTranscript);
+        setInputMessage(currentTranscript);
+      };
+
+      rec.onend = (event) => {
+        console.log(event, isRecording);
+        if (isRecording) {
+          rec.start(); // Restart if still recording
+        }
+      };
+
+      setRecognition(rec);
+    } else {
+      alert('Your browser does not support Speech Recognition.');
+    }
+  }, [isRecording]);
+
+  const startRecording = () => {
+    if (recognition) {
+      recognition.start();
+      setStart(true);
+      setIsRecording(true);
+    }
+  };
+
+  const stopRecording = () => {
+    if (recognition) {
+      recognition.stop();
+      setStart(false);
+      setIsRecording(false);
+    }
+  };
+  console.log(inputMessage);
 
   const fetchProcessedString = async () => {
     try {
-      const response = await fetch(`http://127.0.0.1:5000/query?input_string=${inputMessage}`);
+      const response = await fetch(`http://frontend.updrive.tech:5000/query?input_string=${inputMessage}`);
       const data = await response.json();
       setProcessedString(data.result);
 
@@ -74,13 +147,8 @@ const ChatBot = (props) => {
     }
   };
   const fetchCitations = async () => {
-    // try {
-    //   const response = await fetch(`http://127.0.0.1:5000/citation`);
-    // } catch (error) {
-    //   console.error('Error fetching processed string:', error);
-    // }
       try {
-        const response = await fetch('http://127.0.0.1:5000/citation');
+        const response = await fetch('http://frontend.updrive.tech:5000/citation');
 
         if (!response.ok) {
             throw new Error('Network response was not ok');
@@ -142,21 +210,19 @@ const ChatBot = (props) => {
     setError("");
     await fetchProcessedString();
   };
+  const handleButtonClick = (text) =>{
+    setFirstSelected(true);
+    setInputMessage(text);
+  }
 
   const handleKeyPress = (e) => {
     if (e.key === "Enter") {
       handleSendMessage();
     }
   };
-
-  const handleOptionClick = (id, option) => {
-    if (option === "Reply") {
-      const messageToReply = messages.find((msg) => msg.id === id);
-      setInputMessage(`@${messageToReply.user} `);
-    } else if (option === "Delete") {
-      setMessages(messages.filter((msg) => msg.id !== id));
-    }
-  };
+  const handleMicrophone = ()=>{
+    setStart(!start);
+  }
 
   return (
     <>
@@ -166,7 +232,7 @@ const ChatBot = (props) => {
 
       <div className=" p-4 bg-[#0A1B2E] rounded-lg shadow-lg mt-20 mr-20 ml-20">
         <div className="bg-[#0A1B2E] rounded-lg shadow-inner p-4 min-h-[500px] overflow-y-auto">
-          {initialMessages.map((message) => (
+          {messages.map((message) => (
             <div key={message.id} className={`mb-4 animate-fade-in`}>
               <div
                 className={`flex ${
@@ -215,7 +281,7 @@ const ChatBot = (props) => {
             </div>
           ))}
           <div className="flex-col  mb-4">
-            {startingButtons.map((button) => (
+            {!firstSelected && startingButtons.map((button) => (
               <div className="ml-10 mb-4 w-[450px]">
                 <button
                   key={button.id}
@@ -247,6 +313,13 @@ const ChatBot = (props) => {
               aria-label="Send message"
             >
               <FaPaperPlane />
+            </button>
+            <button
+              onClick={isRecording ? stopRecording : startRecording}
+              className="bg-[#104E8B] text-white p-2 rounded-r-lg hover:bg-[#085B9D] focus:outline-none focus:ring-2 focus:ring-[#5A82B8] ml-2"
+              aria-label="Send message"
+            >
+              {!isRecording?<FaMicrophone />: <FaMicrophoneSlash/>}
             </button>
           </div>
           {error && <p className="text-red-500 mt-2">{error}</p>}
