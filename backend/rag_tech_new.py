@@ -12,19 +12,31 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
 from io import BytesIO
-
+from gtts import gTTS
+from playsound import playsound
+import fitz
+import time
+from datetime import datetime
 
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 class RAGProcessor:
-    def __init__(self, pdf_path, vector_db_collection_name, groq_api_key):
+    def __init__(self, pdf_path, groq_api_key):
         self.pdf_path = pdf_path
-        self.vector_db_collection_name = vector_db_collection_name
         self.nlp = spacy.load("en_core_web_sm")
         self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
         self.client = chromadb.Client()
         self.groq_client = Groq(api_key=groq_api_key)
-        self.collection = self.client.create_collection(vector_db_collection_name)
+        timestamp = time.strftime("%Y%m%d-%H%M%S")
+        file_name = os.path.basename(pdf_path).split('.')[0]
+        self.vector_db_collection_name = f"{file_name}_{timestamp}"
+        self.delete_old_collections()
+        self.collection = self.client.create_collection(self.vector_db_collection_name)
+
+    def delete_old_collections(self):
+        existing_collections = self.client.list_collections()
+        for collection in existing_collections:
+            self.client.delete_collection(collection['name'])  
 
     def read_pdf(self):
         reader = PdfReader(self.pdf_path)
@@ -39,7 +51,6 @@ class RAGProcessor:
                 if any(char.isdigit() for char in line):
                     tables.append(line)
                 line_info.append({"page": page_num, "line": line_number, "text": line})
-
         return text, tables, images, line_info
 
     def chunk_sentences_with_clustering_and_similarity(self, sentences, min_word_count=100, max_word_count=300, similarity_threshold=0.7):
@@ -65,8 +76,8 @@ class RAGProcessor:
                         current_chunk.append(cluster_sentences[j])
                         visited.add(j)
 
-                chunk_text = current_chunk
-                if min_word_count <= len(chunk_text) <= max_word_count:
+                chunk_text = ' '.join(current_chunk)
+                if min_word_count <= len(chunk_text.split()) <= max_word_count:
                     context_chunks.append(chunk_text)
 
         return context_chunks
@@ -85,8 +96,8 @@ class RAGProcessor:
                 page_number = matching_lines[0]["page"]
                 line_number = matching_lines[0]["line"]
             else:
-                page_number = "unknown"
-                line_number = "unknown"
+                page_number = 0
+                line_number = 1
 
             unique_id = str(uuid.uuid4())
             metadata = {
@@ -108,9 +119,13 @@ class RAGProcessor:
             query_embeddings=query_embedding.tolist(),
             n_results=n_results
         )
-        citations = [meta['page_number'] for meta in results["metadatas"][0]]
-        hybrid_results = results['documents']
-        return hybrid_results, citations
+        c = results["metadatas"][0]
+        citation = []
+        for i in c:
+            page_number = i['page_number']
+            citation.append(page_number)
+        hybrid_results = [result for result in results['documents']]
+        return hybrid_results, citation
 
     def get_bot_response(self, user_input, context):
         detailed_prompt = (
@@ -134,50 +149,107 @@ class RAGProcessor:
         search_results, citations = self.hybrid_similarity_search(query)
         context = search_results
         bot_response = self.get_bot_response(query, context)
-        return bot_response, citations
+        return bot_response, citations, context
 
     def highlight_and_append_pdf_page(self, input_pdf: str, output_pdf: str, page_number: int):
         reader = PdfReader(input_pdf)
         if page_number < 1 or page_number > len(reader.pages):
             raise ValueError("Invalid page number")
-        
-        page = reader.pages[page_number - 1]  
-
-
+        page = reader.pages[page_number - 1]
         writer = PdfWriter()
-        writer.add_page(page)  
-
-        packet = BytesIO()
-        can = canvas.Canvas(packet, pagesize=letter)
-
-        can.setFillColor(colors.yellow)
-        can.rect(50, 700, 500, 50, fill=1)  
-        can.save()
-
-        packet.seek(0)
-        highlighted_pdf = PdfReader(packet)
-        highlighted_page = highlighted_pdf.pages[0]
-
-        writer.add_page(highlighted_page)
+        try:
+            existing_output_reader = PdfReader(output_pdf)
+            for existing_page in range(len(existing_output_reader.pages)):
+                writer.add_page(existing_output_reader.pages[existing_page])
+        except FileNotFoundError:
+            print(f"Creating new output PDF: {output_pdf}")
+        writer.add_page(page)
         with open(output_pdf, 'wb') as f:
             writer.write(f)
+        print(f"Page {page_number} fully highlighted and saved to {output_pdf}")
 
-        print(f"Page {page_number} highlighted and saved to {output_pdf}")
+    def text_to_audio(self, text, lang='en', filename='output.mp3'):
+        try:
+            tts = gTTS(text=text, lang=lang)
+            tts.save(filename)
+            playsound(filename)
+            os.remove(filename)
+        except Exception as e:
+            print(f"An error occurred: {e}")
 
+    def split_text_into_chunks(self, text, chunk_size=100):
+        words = text.split()
+        return [' '.join(words[i:i + chunk_size]) for i in range(0, len(words), chunk_size)]
+
+    def highlight_similar_chunks_in_pdf(self, pdf_path, query, threshold=0.7, chunk_size=100):
+        model = SentenceTransformer('all-MiniLM-L6-v2')
+        document = fitz.open(pdf_path)
+        highlighted_pages = []
+
+
+        for page_num in range(len(document)):
+            page = document[page_num]
+            text = page.get_text("text")
+            text_chunks = self.split_text_into_chunks(text, chunk_size)
+            query_embedding = model.encode(query, convert_to_tensor=True)
+
+            for chunk in text_chunks:
+                if chunk.strip():
+                    chunk_embedding = model.encode(chunk, convert_to_tensor=True)
+                    similarity = util.pytorch_cos_sim(query_embedding, chunk_embedding).item()
+
+                    if similarity > threshold:
+                        text_instances = page.search_for(chunk)
+                        for inst in text_instances:
+                            highlight = page.add_highlight_annot(inst)
+
+            highlighted_pages.append(page_num)
+
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        highlighted_pdf_path = f"highlighted_{timestamp}.pdf"
+    
+        document.save(highlighted_pdf_path)
+        document.close()
+
+        print(f"Highlighted PDF saved as: {highlighted_pdf_path}")
+        return highlighted_pdf_path
 
 
 if __name__ == "__main__":
-    pdf_processor = RAGProcessor(pdf_path="amazon.pdf", vector_db_collection_name="my_vector_collection", groq_api_key="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")
+    ## for highlighting pdf
+    '''
+    pdf_processor = RAGProcessor(pdf_path="amazon.pdf", groq_api_key="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")
     pdf_processor.process_pdf_and_store()
-    print("PDF Processed...")
+    query = "who is the ceo of amazon"
 
+    response, citations, context = pdf_processor.handle_query(query)
+
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    output_pdf = f"output_{timestamp}.pdf"
+
+    print(response)
+    print(context)
+
+    for i in sorted(set(citations)):
+        if(str(i).isdigit()):
+            pdf_processor.highlight_and_append_pdf_page(input_pdf='amazon.pdf', output_pdf=output_pdf, page_number=int(i) + 1)
+
+    pdf_processor.highlight_similar_chunks_in_pdf(output_pdf, query, threshold=0.5, chunk_size=100) # in this input the output pdf to get the highlighted pdf
+    '''
+
+    ## for suggesting 5 questions
+    pdf_processor = RAGProcessor(pdf_path="amazon.pdf", groq_api_key="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")
+    pdf_processor.process_pdf_and_store()
     query = "Generate 5 random Questions Regarding the amazon company do not generate any answer"
-    response, citations = pdf_processor.handle_query(query)
-    print(citations)
+    citations = []
 
-    questions = [line for line in response.split("\n") if '?' in line]
-    print(questions)
-
-    for page_number in citations:
-        if page_number.isdigit():
-            pdf_processor.highlight_and_append_pdf_page(input_pdf='amazon.pdf', output_pdf='output.pdf', page_number=int(page_number) + 1)
+    response,citations,context = pdf_processor.handle_query(query)
+    n = response.split("\n")
+    print(n)
+    g = []
+    for i in n:
+            if(len(i) > 1):
+                if(i[0].isdigit() == True):
+                    g.append(i)
+    print(g)
+    
