@@ -80,18 +80,21 @@ def get_query():
 
     # Process the query
     processed_string,citations,context = rag.handle_query(input_string)
+
+    
     print(citations)
     for i in citations:
         if(str(i).isdigit() == True):
             print(curr_file)
             rag.highlight_and_append_pdf_page(input_pdf=curr_file,output_pdf='output.pdf',page_number=i+1)
+    rag.highlight_similar_chunks_in_pdf('output.pdf', input_string, threshold=0.5, chunk_size=100) # in this input the output pdf to get the highlighted pdf
 
     return jsonify({'message': 'String processed successfully', 'result': processed_string}), 200
 
 @app.route('/citation', methods=['GET'])
 def get_citation():
     # Create a response object
-    response = make_response(send_file('output.pdf', as_attachment=True))
+    response = make_response(send_file('highlighted.pdf', as_attachment=True))
     
     return response
 

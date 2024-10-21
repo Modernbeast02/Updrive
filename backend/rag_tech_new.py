@@ -206,7 +206,7 @@ class RAGProcessor:
             highlighted_pages.append(page_num)
 
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        highlighted_pdf_path = f"highlighted_{timestamp}.pdf"
+        highlighted_pdf_path = f"highlighted.pdf"
     
         document.save(highlighted_pdf_path)
         document.close()
