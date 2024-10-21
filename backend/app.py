@@ -2,7 +2,7 @@ import os
 from flask import Flask, jsonify, request, make_response, send_file
 from flask_cors import CORS
 import json
-from rag_tech import RAGProcessor
+from rag_tech_new import RAGProcessor
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -21,7 +21,7 @@ def initialize_rag(file_path):
     curr_file =file_path
     global rag
     if rag is None:
-        rag = RAGProcessor(pdf_path=file_path, vector_db_collection_name="my_vector_collection", 
+        rag = RAGProcessor(pdf_path=file_path,
                            groq_api_key="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")
         rag.process_pdf_and_store()
         print("RAGProcessor initialized.")
@@ -55,7 +55,7 @@ def get_questions():
     global rag
     query = "Generate 5 random Questions about the pdf in input do not generate any answer"
     citations = []
-    response,citations = rag.handle_query(query)
+    response,citations,context = rag.handle_query(query)
     n = response.split("\n")
     print(n)
     g = []
@@ -79,7 +79,7 @@ def get_query():
         return jsonify({'error': 'No RAGProcessor instance available'}), 400
 
     # Process the query
-    processed_string, citations = rag.handle_query(input_string)
+    processed_string,citations,context = rag.handle_query(input_string)
     print(citations)
     for i in citations:
         if(str(i).isdigit() == True):
