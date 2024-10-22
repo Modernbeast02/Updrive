@@ -12,8 +12,6 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
 from io import BytesIO
-from gtts import gTTS
-from playsound import playsound
 import fitz
 import time
 from datetime import datetime
@@ -190,14 +188,14 @@ class RAGProcessor:
             writer.write(f)
         print(f"Page {page_number} fully highlighted and saved to {output_pdf}")
 
-    def text_to_audio(self, text, lang='en', filename='output.mp3'):
-        try:
-            tts = gTTS(text=text, lang=lang)
-            tts.save(filename)
-            playsound(filename)
-            os.remove(filename)
-        except Exception as e:
-            print(f"An error occurred: {e}")
+    # def text_to_audio(self, text, lang='en', filename='output.mp3'):
+    #     try:
+    #         tts = gTTS(text=text, lang=lang)
+    #         tts.save(filename)
+    #         playsound(filename)
+    #         os.remove(filename)
+    #     except Exception as e:
+    #         print(f"An error occurred: {e}")
 
     def split_text_into_chunks(self, text, chunk_size=100):
         words = text.split()
