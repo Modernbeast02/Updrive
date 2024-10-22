@@ -25,7 +25,7 @@ class RAGProcessor:
         self.pdf_path = pdf_path
         self.nlp = spacy.load("en_core_web_sm")
         self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
-        self.client = chromadb.Client()
+        self.client = chromadb.HttpClient(host="chroma", port=8000)
         self.groq_client = Groq(api_key=groq_api_key)
         timestamp = time.strftime("%Y%m%d-%H%M%S")
         file_name = os.path.basename(pdf_path).split('.')[0]
