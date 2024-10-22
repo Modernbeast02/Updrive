@@ -20,11 +20,10 @@ def initialize_rag(file_path):
     global curr_file
     curr_file =file_path
     global rag
-    if rag is None:
-        rag = RAGProcessor(pdf_path=file_path,
-                           groq_api_key="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")
-        rag.process_pdf_and_store()
-        print("RAGProcessor initialized.")
+    rag = RAGProcessor(pdf_path=file_path,
+                        groq_api_key="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")
+    rag.process_pdf_and_store()
+    print("RAGProcessor initialized.")
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
@@ -83,11 +82,11 @@ def get_query():
 
     
     print(citations)
-    for i in citations:
-        if(str(i).isdigit() == True):
+    for i in sorted(set(citations)):
+        if(str(i).isdigit()):
             print(curr_file)
             rag.highlight_and_append_pdf_page(input_pdf=curr_file,output_pdf='output.pdf',page_number=i+1)
-    rag.highlight_similar_chunks_in_pdf('output.pdf', input_string, threshold=0.5, chunk_size=100) # in this input the output pdf to get the highlighted pdf
+    rag.highlight_similar_chunks_in_pdf('output.pdf', input_string, threshold=0.3, chunk_size=100) # in this input the output pdf to get the highlighted pdf
 
     return jsonify({'message': 'String processed successfully', 'result': processed_string}), 200
 

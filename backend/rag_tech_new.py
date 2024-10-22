@@ -30,7 +30,7 @@ class RAGProcessor:
         timestamp = time.strftime("%Y%m%d-%H%M%S")
         file_name = os.path.basename(pdf_path).split('.')[0]
         self.vector_db_collection_name = f"{file_name}_{timestamp}"
-        self.delete_old_collections()
+        # self.delete_old_collections()
         self.collection = self.client.create_collection(self.vector_db_collection_name)
 
     def delete_old_collections(self):
@@ -130,9 +130,31 @@ class RAGProcessor:
     def get_bot_response(self, user_input, context):
         detailed_prompt = (
             f"Client query: '{user_input}'\n\n"
-            f"Relevant context from the document:\n{context}\n\n"
-            f"If it is a deep complex question, break down the query into logical parts, analyze each aspect based on the provided context, "
-            f"and provide a detailed answer. Be sure to reason through the steps for a more analytical response."
+
+            "Using the relevant context from the document:"
+
+            f"{context}"
+            '''
+            Follow these steps to solve the query accurately:
+
+            the question might be numeric , mcq or just a general question deal with it accordingly
+
+            Clarify the question: Break down the user’s input to understand what specific numerical result is being asked for. Identify the values provided in the user input and what kind of result (calculation, comparison, etc.) is expected.
+
+            Extract key values: Identify and list out the relevant numbers, variables, and any other important information from the user input.
+
+            Apply formulas from the context: Use any formulas, examples, or procedures given in the context to solve the problem. Clearly outline how these formulas fit the specific problem based on the input.
+
+            Perform step-by-step calculations: Solve the problem using the formulas and values, executing each calculation carefully. Ensure precision by checking units and applying correct mathematical operations.
+
+            Verify the result: Analyze whether the calculated result aligns logically with the context. Ensure the answer makes sense given the user's input and context-based formulas.
+
+            Provide the final answer: Present the numerical result, along with an explanation of how the values from the input and formulas from the context were used to arrive at the solution. Clearly justify why this answer is correct.
+
+            Be sure to validate each step and ensure the answer is accurate and well-reasoned.
+
+            give the correct answer in the end give a valid reason for the answer
+            '''
         )
 
         chat_completion = self.groq_client.chat.completions.create(
